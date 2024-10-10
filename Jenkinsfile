@@ -15,7 +15,7 @@ pipeline {
             steps {
                 script {
                     echo "Start check out code..."
-                    retry(1) {
+                    retry(3) {
                         try {
                             dir('bingo-frenzy-client') {
                                 checkout scm: [
@@ -23,7 +23,7 @@ pipeline {
                                     branches: [[name: params.TARGET_COMMIT_ID]],
                                     userRemoteConfigs: [[url: 'git@github.com:joycastle/bingo-frenzy-client.git']],
                                     extensions: [
-                                        [$class: 'CloneOption', timeout: 120]
+                                        [$class: 'CloneOption', timeout: 120, reference: '/Users/jenkins/.jenkins/workspace/bingo_build_apk']
                                     ]
                                 ]
                             }
