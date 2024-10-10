@@ -1,5 +1,5 @@
 def build(String platform, Map params) {
-    stage("build ${platform.capitalize()}") {
+    stage("Build ${platform.capitalize()}") {
         echo "Building ${platform.capitalize()}..."
     }
 }

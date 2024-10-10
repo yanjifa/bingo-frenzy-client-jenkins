@@ -1,7 +1,7 @@
 pipeline {
     agent any
     stages {
-        stage('print params') {
+        stage('Print Parameters') {
             steps {
                 script {
                     echo "All Parameters:"
@@ -11,7 +11,7 @@ pipeline {
                 }
             }
         }
-        stage('checkout code') {
+        stage('Check Out Code') {
             steps {
                 script {
                     echo "Start check out code..."
@@ -37,7 +37,7 @@ pipeline {
                 }
             }
         }
-        stage('compress texture') {
+        stage('Compress Texture') {
             steps {
                 echo "Compressing texture..."
             }
