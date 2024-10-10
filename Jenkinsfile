@@ -15,7 +15,7 @@ pipeline {
             steps {
                 script {
                     echo "Start check out code..."
-                    retry(3) { // 如果检出失败，尝试最多三次
+                    retry(1) {
                         try {
                             dir('bingo-frenzy-client') {
                                 checkout scm: [
@@ -27,9 +27,9 @@ pipeline {
                                     ]
                                 ]
                             }
-                        } catch (e) {
+                        } catch (Exception e) {
                             // 如果检出失败，等待120秒后再次尝试
-                            echo "Checkout failed, retrying in 120 seconds..."
+                            echo "Checkout failed, retrying in 120 seconds. Error: ${e.getMessage()}"
                             sleep time: 120, unit: 'SECONDS'
                             throw e // 重新抛出异常以确保可以被 retry 捕获
                         }
