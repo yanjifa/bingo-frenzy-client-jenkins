@@ -20,7 +20,7 @@ pipeline {
                             dir('bingo-frenzy-client') {
                                 checkout scm: [
                                     $class: 'GitSCM',
-                                    branches: [[name: params.BRANCH_NAME]],
+                                    branches: [[name: params.TARGET_COMMIT_ID]],
                                     userRemoteConfigs: [[url: 'git@github.com:joycastle/bingo-frenzy-client.git']],
                                     extensions: [
                                         [$class: 'CloneOption', timeout: 120]
