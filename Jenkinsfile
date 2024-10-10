@@ -50,9 +50,10 @@ pipeline {
 
                     // 遍历每个平台并添加到并行构建阶段
                     for (platform in platforms) {
-                        buildStages["Build ${platform.capitalize()}"] = {
-                            def script = load "scripts/build-${platform}.groovy"
-                            script.build(platform, params)
+                        def currentPlatform = platform // 创建新的局部变量以避免闭包问题
+                        buildStages["Build ${currentPlatform}"] = {
+                            def script = load "scripts/build-${currentPlatform}.groovy"
+                            script.build(currentPlatform, params)
                         }
                     }
                     // 执行并行阶段
