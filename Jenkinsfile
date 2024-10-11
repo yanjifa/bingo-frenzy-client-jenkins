@@ -23,7 +23,7 @@ pipeline {
                                     branches: [[name: params.TARGET_COMMIT_ID]],
                                     userRemoteConfigs: [[url: 'git@github.com:joycastle/bingo-frenzy-client.git']],
                                     extensions: [
-                                        [$class: 'CloneOption', timeout: 120, reference: '/Users/jenkins/.jenkins/workspace/bingo_build_apk']
+                                        [$class: 'CloneOption', timeout: 120]
                                     ]
                                 ]
                             }
