@@ -5,10 +5,13 @@ pipeline {
         PROJECT_PATH = 'bingo-frenzy-client'
     }
     stages {
-        // 打印参数
-        stage('Print Parameters') {
+        // 清理工作区, 打印参数
+        stage('Clean Up') {
             steps {
                 script {
+                    echo 'Clean workspace...'
+                    sh "rm -rf ${env.WORKSPACE}/workspace"
+
                     echo "All Parameters:"
                     params.each { key, value ->
                         echo "${key}: ${value}"
@@ -111,8 +114,11 @@ pipeline {
                     for (platform in platforms) {
                         def currentPlatform = platform // 创建新的局部变量以避免闭包问题
                         buildStages["Build ${currentPlatform}"] = {
-                            def script = load "scripts/build-${currentPlatform}.groovy"
-                            script.build(currentPlatform, params)
+                            stage("Build ${currentPlatform}") {
+                                echo "Building ${currentPlatform}..."
+                                def script = load "scripts/build-${currentPlatform}.groovy"
+                                script.build(currentPlatform, params)
+                            }
                         }
                     }
                     // 执行并行阶段
