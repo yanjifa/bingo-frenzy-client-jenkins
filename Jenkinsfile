@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    environment {
+        COCOS = '/Applications/Cocos/Creator/2.4.13/CocosCreator.app/Contents/MacOS/CocosCreator'
+    }
     stages {
         stage('Print Parameters') {
             steps {
@@ -23,8 +26,8 @@ pipeline {
                                     branches: [[name: params.TARGET_COMMIT_ID]],
                                     userRemoteConfigs: [[url: 'git@github.com:joycastle/bingo-frenzy-client.git']],
                                     extensions: [
-                                        [$class: 'CloneOption', timeout: 120]
-                                    ]
+                                        [$class: 'CloneOption', timeout: 120],
+                                        [$class: 'CleanCheckout']                                    ]
                                 ]
                             }
                         } catch (Exception e) {
@@ -35,11 +38,35 @@ pipeline {
                         }
                     }
                 }
+                script {
+                    echo "Update Submodule..."
+                    script {
+                        def submodules = [
+                            "engine"
+                            // "engine-native"
+                        ]
+                        submodules.each {
+                            sh "git submodule update --init --recursive ${it}"
+                        }
+                    }
+                }
             }
         }
         stage('Compress Texture') {
             steps {
                 echo "Compressing texture..."
+            }
+        }
+        stage('Download Configs') {
+            steps {
+                // 下载配置文件, 后面 Link Bundles 阶段会用到
+                echo "Downloading configs..."
+            }
+        }
+        stage('Link Bundles') {
+            steps {
+                // 根据配置决定哪些 Bundle 需要链接
+                echo "Linking bundles..."
             }
         }
         stage('Dynamic Parallel Build') {
