@@ -3,7 +3,7 @@ def build(String platform, Map params) {
         echo "Building ${platform}..."
         // 加载工具类
         def utils = load 'scripts/utils.groovy'
-        def workspaceDir = "workspace-${platform}"
+        def workspaceDir = "workspace/${platform}"
         dir("${workspaceDir}") {
             // 准备工作区
             utils.makeWorkSpace()

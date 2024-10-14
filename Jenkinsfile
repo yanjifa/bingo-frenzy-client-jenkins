@@ -41,7 +41,7 @@ pipeline {
                             }
                         }
                     }
-                    // 更新子模块
+                    // 更新子模块, 首次需要手动编译引擎
                     script {
                         echo "Update Submodule..."
                         script {
