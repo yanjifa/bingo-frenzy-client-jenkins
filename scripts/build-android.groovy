@@ -1,10 +1,10 @@
 def build(String platform, Map params) {
     stage("Build ${platform}") {
         echo "Building ${platform}..."
+        // 加载工具类
+        def utils = load 'utils.groovy'
         def workspaceDir = "workspace-${platform}"
         dir("${workspaceDir}") {
-            // 加载工具类
-            def utils = load 'utils.groovy'
             // 准备工作区
             utils.makeWorkSpace()
             // 构建 Cocos 项目, 重试 3 次
