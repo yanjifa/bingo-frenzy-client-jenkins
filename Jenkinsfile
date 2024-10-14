@@ -68,9 +68,9 @@ pipeline {
                         def jsEnginePath = "${env.WORKSPACE}/${env.PROJECT_PATH}/engine"
                         def cppEnginePath = "${env.WORKSPACE}/${env.PROJECT_PATH}/build/jsb-default/frameworks/cocos2d-x"
                         sh """
-                        cat local/settings_template.json \
-                        | sed "s/.*js-engine-path.*/  \\"js-engine-path\\": \\"${jsEnginePath}\\",/" \
-                        | sed "s/.*cpp-engine-path.*/  \\"cpp-engine-path\\": \\"${cppEnginePath}\\",/" \
+                        cat local/settings_template.json \\
+                        | sed "s/.*js-engine-path.*/  \\"js-engine-path\\": \\"${jsEnginePath}\\",/" \\
+                        | sed "s/.*cpp-engine-path.*/  \\"cpp-engine-path\\": \\"${cppEnginePath}\\",/" \\
                         > local/settings.json
                         """
                     }
