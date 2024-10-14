@@ -2,7 +2,7 @@ def build(String platform, Map params) {
     stage("Build ${platform}") {
         echo "Building ${platform}..."
         // 加载工具类
-        def utils = load 'utils.groovy'
+        def utils = load 'scripts/utils.groovy'
         def workspaceDir = "workspace-${platform}"
         dir("${workspaceDir}") {
             // 准备工作区
