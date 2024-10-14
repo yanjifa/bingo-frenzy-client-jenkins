@@ -10,7 +10,7 @@ def build(String platform, Map params) {
             // 构建 Cocos 项目, 重试 3 次
             retry(3) {
                 try {
-                    def buildArg = "platform=${platform};buildPath=./build;template=default;apiLevel=android-22;appABIs=['armeabi-v7a','arm64-v8a','x86'];debug=false;"
+                    def buildArg = "platform=${platform};buildPath=./build;template=default;apiLevel=android-22;appABIs=[\"armeabi-v7a\",\"arm64-v8a\",\"x86\"];debug=false;"
                     utils.buildCocos(buildArg)
                 } catch (Exception e) {
                     // 如果检出失败，等待120秒后再次尝试s
