@@ -5,6 +5,8 @@ def build(String platform, Map params) {
     dir("${workspaceDir}") {
         // 准备工作区
         utils.makeWorkSpace()
+        // 延迟
+        sleep time: 20, unit: 'SECONDS'
         // 构建 Cocos 项目, 重试 3 次
         retry(3) {
             try {
