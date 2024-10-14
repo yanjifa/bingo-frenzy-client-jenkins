@@ -16,37 +16,37 @@ pipeline {
         }
         stage('Check Out Code') {
             steps {
-                script {
-                    echo "Start check out code..."
-                    retry(3) {
-                        try {
-                            dir('bingo-frenzy-client') {
-                                checkout scm: [
-                                    $class: 'GitSCM',
-                                    branches: [[name: params.TARGET_COMMIT_ID]],
-                                    userRemoteConfigs: [[url: 'git@github.com:joycastle/bingo-frenzy-client.git']],
-                                    extensions: [
-                                        [$class: 'CloneOption', timeout: 120],
-                                        [$class: 'CleanCheckout']                                    ]
-                                ]
-                            }
-                        } catch (Exception e) {
-                            // 如果检出失败，等待120秒后再次尝试
-                            echo "Checkout failed, retrying in 120 seconds. Error: ${e.getMessage()}"
-                            sleep time: 120, unit: 'SECONDS'
-                            throw e // 重新抛出异常以确保可以被 retry 捕获
-                        }
-                    }
-                }
-                script {
-                    echo "Update Submodule..."
+                dir('bingo-frenzy-client') {
                     script {
-                        def submodules = [
-                            "engine"
-                            // "engine-native"
-                        ]
-                        submodules.each {
-                            sh "git submodule update --init --recursive ${it}"
+                        echo "Start check out code..."
+                        retry(3) {
+                            try {
+                                    checkout scm: [
+                                        $class: 'GitSCM',
+                                        branches: [[name: params.TARGET_COMMIT_ID]],
+                                        userRemoteConfigs: [[url: 'git@github.com:joycastle/bingo-frenzy-client.git']],
+                                        extensions: [
+                                            [$class: 'CloneOption', timeout: 120],
+                                            [$class: 'CleanCheckout']                                    ]
+                                    ]
+                                }
+                            } catch (Exception e) {
+                                // 如果检出失败，等待120秒后再次尝试
+                                echo "Checkout failed, retrying in 120 seconds. Error: ${e.getMessage()}"
+                                sleep time: 120, unit: 'SECONDS'
+                                throw e // 重新抛出异常以确保可以被 retry 捕获
+                            }
+                    }
+                    script {
+                        echo "Update Submodule..."
+                        script {
+                            def submodules = [
+                                "engine"
+                                // "engine-native"
+                            ]
+                            submodules.each {
+                                sh "git submodule update --init --recursive ${it}"
+                            }
                         }
                     }
                 }
