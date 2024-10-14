@@ -1,8 +1,3 @@
-import java.nio.file.Files
-import java.nio.file.Paths
-import groovy.json.JsonSlurper
-import groovy.json.JsonOutput
-
 pipeline {
     agent any
     environment {
@@ -66,21 +61,20 @@ pipeline {
         // 安装依赖
         stage ('Dependencies') {
             steps {
-                // 自定义引擎
-                script {
-                    echo "Customizing engine..."
-                    def jsonFilePath = "${env.WORKSPACE}/${env.PROJECT_PATH}/local/settings_template.json"
-                    def settingText = new String(Files.readAllBytes(Paths.get(jsonFilePath)))
-                    def slurper = new JsonSlurper()
-                    def data = slurper.parseText(settingText)
-                    data['js-engine-pat'] = "${env.WORKSPACE}/${env.PROJECT_PATH}/engine";
-                    data['cpp-engine-path'] = "${env.WORKSPACE}/${env.PROJECT_PATH}/build/jsb-default/frameworks/cocos2d-x";
-                    def updatedJsonText = JsonOutput.toJson(data)
-                    def prettyJsonText = JsonOutput.prettyPrint(updatedJsonText)
-                    Files.write(path, prettyJsonText.getBytes("UTF-8"))
-                }
-                // 安装依赖
                 dir("${env.PROJECT_PATH}") {
+                    // 自定义引擎
+                    script {
+                        echo "Customizing engine..."
+                        def jsEnginePath = "${env.WORKSPACE}/${env.PROJECT_PATH}/engine"
+                        def cppEnginePath = "${env.WORKSPACE}/${env.PROJECT_PATH}/build/jsb-default/frameworks/cocos2d-x"
+                        sh '''
+                        cat local/settings_template.json \
+                        | sed "s/.*js-engine-path.*/  \\"js-engine-path\\": \\"${jsEnginePath}\\",/" \
+                        | sed "s/.*cpp-engine-path.*/  \\"cpp-engine-path\\": \\"${cppEnginePath}\\",/" \
+                        > local/settings.json
+                        '''
+                    }
+                    // 安装依赖
                     echo "Installing dependencies..."
                     sh 'yarn'
                 }
