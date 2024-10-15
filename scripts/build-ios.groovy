@@ -1,8 +1,7 @@
 def build(String platform, Map params) {
     // 加载工具类
     def utils = load 'scripts/utils.groovy'
-    def workspaceDir = "workspace/${platform}"
-    dir("${workspaceDir}") {
+    dir("workspace/${platform}") {
         // 准备工作区
         utils.makeWorkSpace()
         // 延迟
@@ -19,6 +18,11 @@ def build(String platform, Map params) {
                 throw e // 重新抛出异常以确保可以被 retry 捕获
             }
         }
+    }
+}
+
+def buildNative(String platform, Map params) {
+    dir("workspace/${platform}") {
     }
 }
 

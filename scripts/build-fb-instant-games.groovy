@@ -1,8 +1,7 @@
 def build(String platform, Map params) {
     // 加载工具类
     def utils = load 'scripts/utils.groovy'
-    def workspaceDir = "workspace/${platform}"
-    dir("${workspaceDir}") {
+    dir("workspace/${platform}") {
         // 准备工作区
         utils.makeWorkSpace()
         // 延迟
