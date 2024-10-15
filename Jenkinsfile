@@ -23,6 +23,7 @@ pipeline {
                     // 检出代码, 重试 3 次
                     script {
                         echo "Start check out code..."
+                        def err = null
                         retry(3) {
                             try {
                                 checkout scm: [
@@ -36,7 +37,8 @@ pipeline {
                             } catch (Exception e) {
                                 if(e instanceof InterruptedException) {
                                     // 中断异常，可能手动取消, 不重试
-                                    echo 'Checkout was aborted by user.'
+                                    echo "Checkout was aborted by user. Error: ${e.getMessage()}"
+                                    err = e
                                 } else {
                                     // 如果检出失败，等待 120 秒后再次尝试
                                     echo "Checkout failed, retrying in 120 seconds. Error: ${e.getMessage()}"
@@ -44,6 +46,9 @@ pipeline {
                                     throw e // 重新抛出异常以确保可以被 retry 捕获
                                 }
                             }
+                        }
+                        if(err != null) {
+                            throw err
                         }
                     }
                     // 更新子模块, 首次需要手动编译引擎
