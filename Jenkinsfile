@@ -93,6 +93,13 @@ pipeline {
                 echo "Downloading configs..."
             }
         }
+        // 链接 Bundle
+        stage('Link Bundles') {
+            steps {
+                // 根据配置决定哪些 Bundle 需要链接
+                echo "Linking bundles..."
+            }
+        }
         // 动态并行构建
         stage('Dynamic Parallel Build') {
             parallel {
