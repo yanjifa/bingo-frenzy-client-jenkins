@@ -105,64 +105,99 @@ pipeline {
         }
         // 动态并行构建
         stage('Dynamic Parallel Build') {
-            steps {
-                script {
-                    def allPlatforms = ['web-mobile', 'ios', 'android', 'fb-instant-games']
-                    def platformList = params.BUILD_PLATFORMS.tokenize(',')
-                    def buildStages = [:]
-
-                    // 遍历每个平台并添加到并行构建阶段
-                    for (platform in allPlatforms) {
-                        def currentPlatform = platform // 创建新的局部变量以避免闭包问题
-                        buildStages["Build ${currentPlatform}"] = {
-                            stage("Build ${currentPlatform}") {
-                                when {
-                                    expression {
-                                        return platformList.contains(currentPlatform)
-                                    }
-                                }
-                                steps {
-                                    echo "Building ${currentPlatform}..."
-                                    def script = load "scripts/build-${currentPlatform}.groovy"
-                                    script.build(currentPlatform, params)
-                                }
-                            }
+            parallel {
+                stage('Build web-mobile') {
+                    when {
+                        expression {
+                            return params.BUILD_PLATFORMS.tokenize(',').contains('web-mobile')
                         }
                     }
-                    // 执行并行阶段
-                    parallel buildStages
+                    steps {
+                        echo "Building web-mobile..."
+                        script {
+                            def buildScript = load "scripts/build-web-mobile.groovy"
+                            buildScript.build('web-mobile', params)
+                        }
+                    }
+                }
+
+                stage('Build ios') {
+                    when {
+                        expression {
+                            return params.BUILD_PLATFORMS.tokenize(',').contains('ios')
+                        }
+                    }
+                    steps {
+                        echo "Building ios..."
+                        script {
+                            def buildScript = load "scripts/build-ios.groovy"
+                            buildScript.build('ios', params)
+                        }
+                    }
+                }
+
+                stage('Build android') {
+                    when {
+                        expression {
+                            return params.BUILD_PLATFORMS.tokenize(',').contains('android')
+                        }
+                    }
+                    steps {
+                        echo "Building android..."
+                        script {
+                            def buildScript = load "scripts/build-android.groovy"
+                            buildScript.build('android', params)
+                        }
+                    }
+                }
+
+                stage('Build fb-instant-games') {
+                    when {
+                        expression {
+                            return params.BUILD_PLATFORMS.tokenize(',').contains('fb-instant-games')
+                        }
+                    }
+                    steps {
+                        echo "Building fb-instant-games..."
+                        script {
+                            def buildScript = load "scripts/build-fb-instant-games.groovy"
+                            buildScript.build('fb-instant-games', params)
+                        }
+                    }
                 }
             }
         }
         // 构建 Native 包
         stage('Build Native') {
-            steps {
-                script {
-                    def nativePlatforms = ['ios', 'android']
-                    def platformList = params.BUILD_PLATFORMS.tokenize(',')
-
-                    def buildStages = [:]
-
-                    // 遍历每个平台并添加到并行构建阶段
-                    for (platform in nativePlatforms) {
-                        def currentPlatform = platform // 创建新的局部变量以避免闭包问题
-                        buildStages["Build ${currentPlatform} Native"] = {
-                            stage("Build ${currentPlatform} Native") {
-                                when {
-                                    expression {
-                                        return params.BUILD_NATIVE_APP && platformList.contains(currentPlatform)
-                                    }
-                                }
-                                steps {
-                                    echo "Building ${currentPlatform} Native..."
-                                    def script = load "scripts/build-${currentPlatform}.groovy"
-                                    script.buildNative(currentPlatform, params)
-                                }
-                            }
+            parallel {
+                stage('Build ios Native') {
+                    when {
+                        expression {
+                            return params.BUILD_NATIVE_APP && params.BUILD_PLATFORMS.tokenize(',').contains('ios')
                         }
                     }
-                    // 执行并行阶段
-                    parallel buildStages
+                    steps {
+                        echo "Building ios native..."
+                        script {
+                            def buildScript = load "scripts/build-ios.groovy"
+                            buildScript.buildNative('ios', params)
+                        }
+                    }
+                }
+
+                stage('Build android Native') {
+                    when {
+                        expression {
+                            return params.BUILD_NATIVE_APP && params.BUILD_PLATFORMS.tokenize(',').contains('android')
+                        }
+                    }
+                    steps {
+                        echo "Building android native..."
+                        script {
+                            def buildScript = load "scripts/build-android.groovy"
+                            buildScript.buildNative('android', params)
+                        }
+                    }
                 }
             }
         }
