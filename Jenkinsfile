@@ -136,11 +136,6 @@ pipeline {
         }
         // 构建 Native 包
         stage('Build Native') {
-            when {
-                expression {
-                    return params.BUILD_NATIVE_APP == true
-                }
-            }
             steps {
                 script {
                     def nativePlatforms = ['ios', 'android']
@@ -155,7 +150,7 @@ pipeline {
                             stage("Build ${currentPlatform} Native") {
                                 when {
                                     expression {
-                                        return platformList.contains(currentPlatform)
+                                        return params.BUILD_NATIVE_APP && platformList.contains(currentPlatform)
                                     }
                                 }
                                 steps {
