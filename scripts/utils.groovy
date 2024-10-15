@@ -17,12 +17,12 @@ def makeWorkSpace() {
         'local',
         'node_modules',
         'packages',
-        'package.json',
         'settings',
         'tools'
     ]
     // 定义所有需要同步的文件
     def rsyncFiles = [
+        'package.json',
         'project.json',
         'template-banner.png',
         'template.json',
