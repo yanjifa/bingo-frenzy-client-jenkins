@@ -12,6 +12,7 @@ def makeWorkSpace() {
     def rasyncDirs = [
         '@types',
         'assets',
+        'ext-bundles',
         'build-templates',
         'configs',
         'local',
