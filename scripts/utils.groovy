@@ -8,8 +8,8 @@ def makeWorkSpace() {
     delItems.each { item ->
         sh "rm -rf ${item}"
     }
-    // 定义所有需要同步的文件或目录
-    def rasyncItems = [
+    // 定义所有需要同步的目录
+    def rasyncDirs = [
         '@types',
         'assets',
         'build-templates',
@@ -19,7 +19,10 @@ def makeWorkSpace() {
         'packages',
         'package.json',
         'settings',
-        'tools',
+        'tools'
+    ]
+    // 定义所有需要同步的文件
+    def rsyncFiles = [
         'project.json',
         'template-banner.png',
         'template.json',
@@ -28,10 +31,15 @@ def makeWorkSpace() {
         'jsconfig.json'
     ]
     // 使用 Jenkins 的 WORKSPACE 环境变量
-    def workspaceDir = "${env.WORKSPACE}/bingo-frenzy-client"
+    def workspaceDir = "${env.WORKSPACE}/${env.PROJECT_PATH}"
     // 同步工程文件到工作区, 保持工作区与源完全一致
-    rasyncItems.each { item ->
+    rasyncDirs.each { item ->
+        // 同步目录
         sh "rsync -av --delete ${workspaceDir}/${item}/ ${item}/"
+    }
+    rsyncFiles.each { item ->
+        // 同步文件
+        sh "rsync -av ${workspaceDir}/${item} ${item}"
     }
 }
 
