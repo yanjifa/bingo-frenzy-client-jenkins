@@ -5,8 +5,8 @@ pipeline {
         PROJECT_PATH = 'bingo-frenzy-client'
     }
     stages {
-        // 清理工作区, 打印参数
-        stage('Clean Up') {
+        // 打印参数
+        stage('Print Parameters') {
             steps {
                 script {
                     echo "All Parameters:"
@@ -34,10 +34,15 @@ pipeline {
                                         [$class: 'CleanCheckout']                                    ]
                                 ]
                             } catch (Exception e) {
-                                // 如果检出失败，等待120秒后再次尝试
-                                echo "Checkout failed, retrying in 120 seconds. Error: ${e.getMessage()}"
-                                sleep time: 120, unit: 'SECONDS'
-                                throw e // 重新抛出异常以确保可以被 retry 捕获
+                                if(e instanceof InterruptedException) {
+                                    // 中断异常，可能手动取消, 不重试
+                                    echo 'Checkout was aborted by user.'
+                                } else {
+                                    // 如果检出失败，等待 120 秒后再次尝试
+                                    echo "Checkout failed, retrying in 120 seconds. Error: ${e.getMessage()}"
+                                    sleep time: 120, unit: 'SECONDS'
+                                    throw e // 重新抛出异常以确保可以被 retry 捕获
+                                }
                             }
                         }
                     }
