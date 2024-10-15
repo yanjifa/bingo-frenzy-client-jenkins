@@ -9,9 +9,6 @@ pipeline {
         stage('Clean Up') {
             steps {
                 script {
-                    echo 'Clean workspace...'
-                    sh "rm -rf ${env.WORKSPACE}/workspace"
-
                     echo "All Parameters:"
                     params.each { key, value ->
                         echo "${key}: ${value}"
@@ -94,13 +91,6 @@ pipeline {
             steps {
                 // 下载配置文件, 后面 Link Bundles 阶段会用到
                 echo "Downloading configs..."
-            }
-        }
-        // 链接 Bundle
-        stage('Link Bundles') {
-            steps {
-                // 根据配置决定哪些 Bundle 需要链接
-                echo "Linking bundles..."
             }
         }
         // 动态并行构建
