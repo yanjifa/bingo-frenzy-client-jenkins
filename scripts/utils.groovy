@@ -1,4 +1,13 @@
 def makeWorkSpace() {
+    // 删除不需要的文件
+    def delItems = [
+        'build',
+        'temp',
+        'library'
+    ]
+    delItems.each { item ->
+        sh "rm -rf ${item}"
+    }
     // 定义所有需要同步的文件或目录
     def rasyncItems = [
         '@types',
@@ -24,7 +33,6 @@ def makeWorkSpace() {
     rasyncItems.each { item ->
         sh "rsync -av --delete ${workspaceDir}/${item}/ ${item}/"
     }
-
 }
 
 def buildCocos(String buildArg) {
