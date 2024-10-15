@@ -19,8 +19,8 @@ def makeWorkSpace() {
     // 使用 Jenkins 的 WORKSPACE 环境变量
     def workspaceDir = "${env.WORKSPACE}/bingo-frenzy-client"
 
-    // 清空当前目录
-    sh "rm -rf *"
+    // 清空当前目录, (setopt nonomatch) 即便目录不存在也不会报错
+    sh 'setopt nonomatch; rm -rf *'
 
     // 对每一个项目元素创建符号链接
     items.each { item ->
