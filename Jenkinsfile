@@ -107,17 +107,25 @@ pipeline {
         stage('Dynamic Parallel Build') {
             steps {
                 script {
-                    def platforms = params.BUILD_PLATFORMS.tokenize(',')
+                    def allPlatforms = ['web-mobile', 'ios', 'android', 'fb-instant-games']
+                    def platformList = params.BUILD_PLATFORMS.tokenize(',')
                     def buildStages = [:]
 
                     // 遍历每个平台并添加到并行构建阶段
-                    for (platform in platforms) {
+                    for (platform in allPlatforms) {
                         def currentPlatform = platform // 创建新的局部变量以避免闭包问题
                         buildStages["Build ${currentPlatform}"] = {
                             stage("Build ${currentPlatform}") {
-                                echo "Building ${currentPlatform}..."
-                                def script = load "scripts/build-${currentPlatform}.groovy"
-                                script.build(currentPlatform, params)
+                                when {
+                                    expression {
+                                        return platformList.contains(currentPlatform)
+                                    }
+                                }
+                                steps {
+                                    echo "Building ${currentPlatform}..."
+                                    def script = load "scripts/build-${currentPlatform}.groovy"
+                                    script.build(currentPlatform, params)
+                                }
                             }
                         }
                     }
@@ -135,21 +143,26 @@ pipeline {
             }
             steps {
                 script {
-                    def platforms = params.BUILD_PLATFORMS.tokenize(',')
-                    // 移除不需要构建 Native 包的平台
-                    platforms.remove('web-mobile')
-                    platforms.remove('fb-instant-games')
+                    def nativePlatforms = ['ios', 'android']
+                    def platformList = params.BUILD_PLATFORMS.tokenize(',')
 
                     def buildStages = [:]
 
                     // 遍历每个平台并添加到并行构建阶段
-                    for (platform in platforms) {
+                    for (platform in nativePlatforms) {
                         def currentPlatform = platform // 创建新的局部变量以避免闭包问题
                         buildStages["Build ${currentPlatform} Native"] = {
                             stage("Build ${currentPlatform} Native") {
-                                echo "Building ${currentPlatform} Native..."
-                                def script = load "scripts/build-${currentPlatform}.groovy"
-                                script.buildNative(currentPlatform, params)
+                                when {
+                                    expression {
+                                        return platformList.contains(currentPlatform)
+                                    }
+                                }
+                                steps {
+                                    echo "Building ${currentPlatform} Native..."
+                                    def script = load "scripts/build-${currentPlatform}.groovy"
+                                    script.buildNative(currentPlatform, params)
+                                }
                             }
                         }
                     }
