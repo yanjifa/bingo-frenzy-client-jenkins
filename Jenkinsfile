@@ -130,7 +130,7 @@ pipeline {
         stage('Build Native') {
             when {
                 expression {
-                    return params.BUILD_NATIVE == true
+                    return params.BUILD_NATIVE_APP == true
                 }
             }
             steps {
