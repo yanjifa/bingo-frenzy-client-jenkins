@@ -6,17 +6,6 @@ pipeline {
         PROJECT_PATH = 'bingo-frenzy-client'
     }
     stages {
-        // 打印参数
-        stage('Print Parameters') {
-            steps {
-                script {
-                    echo "All Parameters:"
-                    params.each { key, value ->
-                        echo "${key}: ${value}"
-                    }
-                }
-            }
-        }
         // 检出代码
         stage('Check Out Code') {
             steps {
@@ -70,11 +59,11 @@ pipeline {
             }
         }
         // 安装依赖 & 自定义引擎
-        stage ('Dependencies') {
+        stage ('Setup') {
             steps {
                 dir("${env.PROJECT_PATH}") {
-                    // 自定义引擎
                     script {
+                        // 自定义引擎
                         echo "Customizing engine..."
                         def jsEnginePath = "${env.WORKSPACE}/${env.PROJECT_PATH}/engine"
                         def cppEnginePath = "${env.WORKSPACE}/${env.PROJECT_PATH}/build/jsb-default/frameworks/cocos2d-x"
@@ -84,7 +73,6 @@ pipeline {
                         | sed "s|.*cpp-engine-path.*|  \\"cpp-engine-path\\": \\"${cppEnginePath}\\",|" \\
                         > local/settings.json
                         """
-
                         // 安装依赖
                         echo "Installing dependencies..."
                         sh 'yarn'
