@@ -2,6 +2,7 @@ pipeline {
     agent any
     environment {
         COCOS = '/Applications/Cocos/Creator/2.4.13/CocosCreator.app/Contents/MacOS/CocosCreator'
+        REMOTE_URL = 'git@github.com:joycastle/bingo-frenzy-client.git'
         PROJECT_PATH = 'bingo-frenzy-client'
     }
     stages {
@@ -29,7 +30,7 @@ pipeline {
                                 checkout scm: [
                                     $class: 'GitSCM',
                                     branches: [[name: params.TARGET_COMMIT_ID]],
-                                    userRemoteConfigs: [[url: 'git@github.com:joycastle/bingo-frenzy-client.git']],
+                                    userRemoteConfigs: [[url: env.REMOTE_URL]],
                                     extensions: [
                                         [$class: 'CloneOption', timeout: 120],
                                         [$class: 'CleanCheckout']                                    ]
@@ -68,7 +69,7 @@ pipeline {
                 }
             }
         }
-        // 安装依赖
+        // 安装依赖 & 自定义引擎
         stage ('Dependencies') {
             steps {
                 dir("${env.PROJECT_PATH}") {
@@ -83,17 +84,12 @@ pipeline {
                         | sed "s|.*cpp-engine-path.*|  \\"cpp-engine-path\\": \\"${cppEnginePath}\\",|" \\
                         > local/settings.json
                         """
+
+                        // 安装依赖
+                        echo "Installing dependencies..."
+                        sh 'yarn'
                     }
-                    // 安装依赖
-                    echo "Installing dependencies..."
-                    sh 'yarn'
                 }
-            }
-        }
-        // 压缩纹理
-        stage('Compress Texture') {
-            steps {
-                echo "Compressing texture..."
             }
         }
         // 下载配置文件
@@ -101,6 +97,91 @@ pipeline {
             steps {
                 // 下载配置文件, 后面 Link Bundles 阶段会用到
                 echo "Downloading configs..."
+                script {
+                    def err = null
+                    retry(5) {
+                        try {
+                            // 定义变量
+                            def uuid = sh(script: 'uuidgen', returnStdout: true).trim()
+                            def downloadPath = "download/${uuid}"
+                            def toPath = "configs"
+                            def env = params.ENVIRONMENT == 'Prod' ? 'production' : 'develop'
+                            def sheetId = '1XkorKsp8XLiXubD9ffpFsvS6gSXTtbMqk1fe-EDv3ss'
+                            def target = "ubuntu@release.bingo-testing.elitescastle.com"
+
+                            // 打印环境和目标信息
+                            echo "env=$env"
+                            echo "sheet_id=$sheetId"
+                            echo "target=$target"
+
+                            // 远程执行 SSH 命令
+                            sh """
+                            ssh ${target} '
+                                cd /home/ubuntu/ext/bingobe/download/
+                                find . -maxdepth 1 -type d -mtime +7 -exec rm -rf {} \;
+                                cd /home/ubuntu/ext/bingobe
+                                ./bingotool.linux gds export --indent --out "${downloadPath}" --env "${env}" --sheet "${sheetId}"
+                            '
+                            """
+                            echo "Download done"
+
+                            // 清理和准备本地目录
+                            sh "rm -rf ${toPath}"
+                            sh "mkdir -p ${toPath}"
+
+                            // 使用 rsync 同步数据
+                            sh """
+                                rsync --del -avrz --progress -h -e 'ssh' ${target}:~/ext/bingobe/${downloadPath}/client ${toPath}
+                            """
+                            echo "Rsync done!!!"
+                        } catch (Exception e) {
+                            if(e instanceof InterruptedException) {
+                                // 中断异常，可能手动取消, 不重试
+                                echo "Download configs was aborted by user. Error: ${e.getMessage()}"
+                                err = e
+                            } else {
+                                // TODO: 发送飞书通知
+                                // 如果下载失败，等待 60 秒后再次尝试
+                                echo "Download configs failed, retrying in 60 seconds. Error: ${e.getMessage()}"
+                                sleep time: 60, unit: 'SECONDS'
+                                throw e // 重新抛出异常以确保可以被 retry 捕获
+                            }
+                        }
+                    }
+                    if(err != null) {
+                        throw err
+                    }
+                }
+            }
+        }
+        // 压缩纹理
+        stage('Compress Texture') {
+            steps {
+                echo "Compressing texture..."
+                // dir("${env.PROJECT_PATH}/tools/images_compress") {
+                //     def err = null
+                //     retry(3) {
+                //         try {
+                //             sh 'yarn'
+                //             sh 'yarn tsc -p .'
+                //             sh 'node dist/index.js'
+                //         } catch (Exception e) {
+                //             if(e instanceof InterruptedException) {
+                //                 // 中断异常，可能手动取消, 不重试
+                //                 echo "Compress texture was aborted by user. Error: ${e.getMessage()}"
+                //                 err = e
+                //             } else {
+                //                 // 如果压缩失败，等待 30 秒后再次尝试
+                //                 echo "Compress texture failed, retrying in 30 seconds. Error: ${e.getMessage()}"
+                //                 sleep time: 30, unit: 'SECONDS'
+                //                 throw e // 重新抛出异常以确保可以被 retry 捕获
+                //             }
+                //         }
+                //     }
+                //     if(err != null) {
+                //         throw err
+                //     }
+                // }
             }
         }
         // 链接 Bundle
@@ -110,8 +191,8 @@ pipeline {
                 echo "Linking bundles..."
             }
         }
-        // 动态并行构建
-        stage('Dynamic Parallel Build') {
+        // 并行构建 Cocos
+        stage('Build Cocos') {
             parallel {
                 stage('Build web-mobile') {
                     when {
@@ -174,7 +255,7 @@ pipeline {
                 }
             }
         }
-        // 构建 Native 包
+        // 并行构建 Native 包
         stage('Build Native') {
             parallel {
                 stage('Build ios Native') {
