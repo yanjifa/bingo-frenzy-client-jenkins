@@ -9,7 +9,7 @@ pipeline {
     }
     stages {
         // 检出代码
-        stage('Check Out Code') {
+        stage('Check Our Project') {
             steps {
                 dir("${env.PROJECT_PATH}") {
                     // 检出代码, 重试 3 次
