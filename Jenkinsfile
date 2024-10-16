@@ -165,7 +165,7 @@ pipeline {
         stage('Compress Texture') {
             steps {
                 echo "Compressing texture..."
-                dir("${env.PROJECT_PATH}/tools/images-compress") {
+                dir("${env.PROJECT_PATH}/tools/image-compress") {
                     script {
                         def err = null
                         retry(3) {
