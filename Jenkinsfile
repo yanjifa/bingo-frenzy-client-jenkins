@@ -150,7 +150,7 @@ pipeline {
                 // 根据配置决定哪些 Bundle 需要链接, 所以传入了配置文件路径
                 echo "Linking bundles..."
                 script {
-                    sh "rm -rf ${env.PROJECT_PATH}/assets/ext-bundles/*"
+                    sh "setopt nonomatch; rm -rf ${env.PROJECT_PATH}/assets/ext-bundles/*"
                 }
                 dir("${env.PROJECT_PATH}/tools/link-bundles") {
                     script {
