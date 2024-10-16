@@ -87,61 +87,61 @@ pipeline {
             steps {
                 // 下载配置文件, 后面 Link Bundles 阶段会用到
                 echo "Downloading configs..."
-                script {
-                    def err = null
-                    retry(5) {
-                        try {
-                            // 定义变量
-                            def uuid = sh(script: 'uuidgen', returnStdout: true).trim()
-                            def downloadPath = "download/${uuid}"
-                            def toPath = "${env.WORK_DIR_NAME}/${env.CONFIG_DIR_NAME}"
-                            def env = params.ENVIRONMENT == 'Prod' ? 'production' : 'develop'
-                            def sheetId = '1XkorKsp8XLiXubD9ffpFsvS6gSXTtbMqk1fe-EDv3ss'
-                            def target = "ubuntu@release.bingo-testing.elitescastle.com"
+                // script {
+                //     def err = null
+                //     retry(5) {
+                //         try {
+                //             // 定义变量
+                //             def uuid = sh(script: 'uuidgen', returnStdout: true).trim()
+                //             def downloadPath = "download/${uuid}"
+                //             def toPath = "${env.WORK_DIR_NAME}/${env.CONFIG_DIR_NAME}"
+                //             def env = params.ENVIRONMENT == 'Prod' ? 'production' : 'develop'
+                //             def sheetId = '1XkorKsp8XLiXubD9ffpFsvS6gSXTtbMqk1fe-EDv3ss'
+                //             def target = "ubuntu@release.bingo-testing.elitescastle.com"
 
-                            // 打印环境和目标信息
-                            echo "env=$env"
-                            echo "sheet_id=$sheetId"
-                            echo "target=$target"
+                //             // 打印环境和目标信息
+                //             echo "env=$env"
+                //             echo "sheet_id=$sheetId"
+                //             echo "target=$target"
 
-                            // 远程执行 SSH 命令
-                            sh """
-                            ssh ${target} '
-                                cd /home/ubuntu/ext/bingobe/download/
-                                find . -maxdepth 1 -type d -mtime +7 -exec rm -rf {} \\;
-                                cd /home/ubuntu/ext/bingobe
-                                ./bingotool.linux gds export --indent --out "${downloadPath}" --env "${env}" --sheet "${sheetId}"
-                            '
-                            """
-                            echo "Download done"
+                //             // 远程执行 SSH 命令
+                //             sh """
+                //             ssh ${target} '
+                //                 cd /home/ubuntu/ext/bingobe/download/
+                //                 find . -maxdepth 1 -type d -mtime +7 -exec rm -rf {} \\;
+                //                 cd /home/ubuntu/ext/bingobe
+                //                 ./bingotool.linux gds export --indent --out "${downloadPath}" --env "${env}" --sheet "${sheetId}"
+                //             '
+                //             """
+                //             echo "Download done"
 
-                            // 清理和准备本地目录
-                            sh "rm -rf ${toPath}"
-                            sh "mkdir -p ${toPath}"
+                //             // 清理和准备本地目录
+                //             sh "rm -rf ${toPath}"
+                //             sh "mkdir -p ${toPath}"
 
-                            // 使用 rsync 同步数据
-                            sh """
-                                rsync --del -avrz --progress -h -e 'ssh' ${target}:~/ext/bingobe/${downloadPath}/client ${toPath}
-                            """
-                            echo "Rsync done!!!"
-                        } catch (Exception e) {
-                            if(e instanceof InterruptedException) {
-                                // 中断异常，可能手动取消, 不重试
-                                echo "Download configs was aborted by user. Error: ${e.getMessage()}"
-                                err = e
-                            } else {
-                                // TODO: 发送飞书通知
-                                // 如果下载失败，等待 60 秒后再次尝试
-                                echo "Download configs failed, retrying in 60 seconds. Error: ${e.getMessage()}"
-                                sleep time: 60, unit: 'SECONDS'
-                                throw e // 重新抛出异常以确保可以被 retry 捕获
-                            }
-                        }
-                    }
-                    if(err != null) {
-                        throw err
-                    }
-                }
+                //             // 使用 rsync 同步数据
+                //             sh """
+                //                 rsync --del -avrz --progress -h -e 'ssh' ${target}:~/ext/bingobe/${downloadPath}/client ${toPath}
+                //             """
+                //             echo "Rsync done!!!"
+                //         } catch (Exception e) {
+                //             if(e instanceof InterruptedException) {
+                //                 // 中断异常，可能手动取消, 不重试
+                //                 echo "Download configs was aborted by user. Error: ${e.getMessage()}"
+                //                 err = e
+                //             } else {
+                //                 // TODO: 发送飞书通知
+                //                 // 如果下载失败，等待 60 秒后再次尝试
+                //                 echo "Download configs failed, retrying in 60 seconds. Error: ${e.getMessage()}"
+                //                 sleep time: 60, unit: 'SECONDS'
+                //                 throw e // 重新抛出异常以确保可以被 retry 捕获
+                //             }
+                //         }
+                //     }
+                //     if(err != null) {
+                //         throw err
+                //     }
+                // }
             }
         }
         // 链接 Bundle
