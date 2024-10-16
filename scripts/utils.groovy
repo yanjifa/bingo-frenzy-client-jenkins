@@ -1,4 +1,4 @@
-def makeWorkSpace() {
+def setupWorkDir() {
     // 定义所有需要链接的文件或目录
     def items = [
         '@types',

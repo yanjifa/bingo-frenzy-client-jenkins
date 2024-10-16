@@ -3,7 +3,7 @@ def build(String platform, Map params) {
     def utils = load 'scripts/utils.groovy'
     dir("${env.WORK_DIR_NAME}/${platform}") {
         // 准备工作区
-        utils.makeWorkSpace()
+        utils.setupWorkDir()
         // 延迟
         sleep time: 15, unit: 'SECONDS'
         // 构建 Cocos 项目, 重试 3 次

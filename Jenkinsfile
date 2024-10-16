@@ -148,37 +148,47 @@ pipeline {
         stage('Compress Texture') {
             steps {
                 echo "Compressing texture..."
-                // dir("${env.PROJECT_PATH}/tools/images_compress") {
-                //     def err = null
-                //     retry(3) {
-                //         try {
-                //             sh 'yarn'
-                //             sh 'yarn tsc -p .'
-                //             sh 'node dist/index.js'
-                //         } catch (Exception e) {
-                //             if(e instanceof InterruptedException) {
-                //                 // 中断异常，可能手动取消, 不重试
-                //                 echo "Compress texture was aborted by user. Error: ${e.getMessage()}"
-                //                 err = e
-                //             } else {
-                //                 // 如果压缩失败，等待 30 秒后再次尝试
-                //                 echo "Compress texture failed, retrying in 30 seconds. Error: ${e.getMessage()}"
-                //                 sleep time: 30, unit: 'SECONDS'
-                //                 throw e // 重新抛出异常以确保可以被 retry 捕获
-                //             }
-                //         }
-                //     }
-                //     if(err != null) {
-                //         throw err
-                //     }
-                // }
+                dir("${env.PROJECT_PATH}/tools/images_compress") {
+                    def err = null
+                    retry(3) {
+                        try {
+                            sh 'yarn'
+                            sh 'yarn tsc -p .'
+                            sh 'node dist/index.js'
+                        } catch (Exception e) {
+                            if(e instanceof InterruptedException) {
+                                // 中断异常，可能手动取消, 不重试
+                                echo "Compress texture was aborted by user. Error: ${e.getMessage()}"
+                                err = e
+                            } else {
+                                // 如果压缩失败，等待 30 秒后再次尝试
+                                echo "Compress texture failed, retrying in 30 seconds. Error: ${e.getMessage()}"
+                                sleep time: 30, unit: 'SECONDS'
+                                throw e // 重新抛出异常以确保可以被 retry 捕获
+                            }
+                        }
+                    }
+                    if(err != null) {
+                        throw err
+                    }
+                }
             }
         }
         // 链接 Bundle
         stage('Link Bundles') {
             steps {
-                // 根据配置决定哪些 Bundle 需要链接
+                // 根据配置决定哪些 Bundle 需要链接, 所以传入了配置文件路径
                 echo "Linking bundles..."
+                script {
+                    sh "rm -rf ${env.PROJECT_PATH}/assets/ext-bundles/*"
+                }
+                dir("${env.PROJECT_PATH}/tools/link-bundles") {
+                    script {
+                        sh 'yarn'
+                        sh 'yarn tsc -p .'
+                        sh "node dist/index.js ${params.ENVIRONMENT} ${env.WORKSPACE}/${env.WORK_DIR_NAME}/${env.CONFIG_DIR_NAME}"
+                    }
+                }
             }
         }
         // 并行构建 Cocos
