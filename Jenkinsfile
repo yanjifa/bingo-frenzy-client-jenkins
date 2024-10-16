@@ -144,11 +144,28 @@ pipeline {
                 }
             }
         }
-        // 压缩纹理
+        // 链接 Bundle
+        stage('Link Bundles') {
+            steps {
+                // 根据配置决定哪些 Bundle 需要链接, 所以传入了配置文件路径
+                echo "Linking bundles..."
+                script {
+                    sh "rm -rf ${env.PROJECT_PATH}/assets/ext-bundles/*"
+                }
+                dir("${env.PROJECT_PATH}/tools/link-bundles") {
+                    script {
+                        sh 'yarn'
+                        sh 'yarn tsc -p .'
+                        sh "node dist/index.js ${params.ENVIRONMENT} ${env.WORKSPACE}/${env.WORK_DIR_NAME}/${env.CONFIG_DIR_NAME}"
+                    }
+                }
+            }
+        }
+        // 压缩纹理, 依赖前一步 Link Bundles 结果
         stage('Compress Texture') {
             steps {
                 echo "Compressing texture..."
-                dir("${env.PROJECT_PATH}/tools/images_compress") {
+                dir("${env.PROJECT_PATH}/tools/images-compress") {
                     def err = null
                     retry(3) {
                         try {
@@ -170,23 +187,6 @@ pipeline {
                     }
                     if(err != null) {
                         throw err
-                    }
-                }
-            }
-        }
-        // 链接 Bundle
-        stage('Link Bundles') {
-            steps {
-                // 根据配置决定哪些 Bundle 需要链接, 所以传入了配置文件路径
-                echo "Linking bundles..."
-                script {
-                    sh "rm -rf ${env.PROJECT_PATH}/assets/ext-bundles/*"
-                }
-                dir("${env.PROJECT_PATH}/tools/link-bundles") {
-                    script {
-                        sh 'yarn'
-                        sh 'yarn tsc -p .'
-                        sh "node dist/index.js ${params.ENVIRONMENT} ${env.WORKSPACE}/${env.WORK_DIR_NAME}/${env.CONFIG_DIR_NAME}"
                     }
                 }
             }
