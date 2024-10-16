@@ -118,7 +118,7 @@ pipeline {
                             sh """
                             ssh ${target} '
                                 cd /home/ubuntu/ext/bingobe/download/
-                                find . -maxdepth 1 -type d -mtime +7 -exec rm -rf {} \;
+                                find . -maxdepth 1 -type d -mtime +7 -exec rm -rf {} \\;
                                 cd /home/ubuntu/ext/bingobe
                                 ./bingotool.linux gds export --indent --out "${downloadPath}" --env "${env}" --sheet "${sheetId}"
                             '
