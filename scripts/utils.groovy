@@ -4,6 +4,7 @@ def setupWorkDir() {
         '@types',
         'assets',
         'build-templates',
+        'configs',
         'local',
         'node_modules',
         'packages',

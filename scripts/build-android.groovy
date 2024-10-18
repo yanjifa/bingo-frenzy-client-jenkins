@@ -29,6 +29,15 @@ def build(String platform, Map params) {
             throw err
         }
     }
+    // 传入参数为构建结果的路径, 纯资源处理, 不需要网络, 不需要重试
+    dir("${env.PROJECT_PATH}/tools/bundling-assets") {
+        sh 'yarn'
+        sh 'yarn tsc -p .'
+        sh "node dist/index.js ${env.WORKSPACE}/${env.WORK_DIR_NAME}/${platform} ${platform}"
+    }
+    // remote asset bundle 上传 aws
+
+    // 发布热更新
 }
 
 def buildNative(String platform, Map params) {
