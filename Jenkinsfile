@@ -9,7 +9,7 @@ pipeline {
     }
     stages {
         // 检出代码
-        stage('Check Out Project') {
+        stage('Checkout Project') {
             steps {
                 dir("${env.PROJECT_PATH}") {
                     // 检出代码, 重试 3 次
@@ -152,13 +152,13 @@ pipeline {
                 script {
                     sh "setopt nonomatch; rm -rf ${env.PROJECT_PATH}/assets/ext-bundles/*"
                 }
-                dir("${env.PROJECT_PATH}/tools/link-bundles") {
-                    script {
-                        sh 'yarn'
-                        sh 'yarn tsc -p .'
-                        sh "node dist/index.js ${params.ENVIRONMENT} ${env.WORKSPACE}/${env.WORK_DIR_NAME}/${env.CONFIG_DIR_NAME}"
-                    }
-                }
+                // dir("${env.PROJECT_PATH}/tools/link-bundles") {
+                //     script {
+                //         sh 'yarn'
+                //         sh 'yarn tsc -p .'
+                //         sh "node dist/index.js ${params.ENVIRONMENT} ${env.WORKSPACE}/${env.WORK_DIR_NAME}/${env.CONFIG_DIR_NAME}"
+                //     }
+                // }
             }
         }
         // 压缩纹理, 依赖前一步 Link Bundles 结果
