@@ -161,7 +161,7 @@ pipeline {
                     while (build != null && targetCommitHash == null) {
                         // 获取构建参数
                         def previousParams = build.rawBuild.getAction(hudson.model.ParametersAction.class)
-                        def previousPlats = previousParams.getParameter('BUILD_PLATFORMS').tokenize(',')
+                        def previousPlats = previousParams.getParameter('BUILD_PLATFORMS').value.tokenize(',')
                         if(previousPlats.size() == 4) { // 只查找包含所有平台的构建
                             def actions = build.rawBuild.getActions(hudson.plugins.git.util.BuildData.class)
                             for (action in actions) {
