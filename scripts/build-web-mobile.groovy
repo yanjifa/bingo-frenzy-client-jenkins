@@ -35,6 +35,7 @@ def build(String platform, Map params) {
         sh 'yarn tsc -p .'
         sh "node dist/index.js ${env.WORKSPACE}/${env.WORK_DIR_NAME}/${platform} ${platform}"
     }
+    // 上传 aws
 }
 
 return this;
