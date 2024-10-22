@@ -158,6 +158,7 @@ pipeline {
                     // 如果没有找到, link 所有 bundle, 如果想强制构建所有, 暂时注释 while 循环, 不常用, 就不增加参数了
                     def targetCommitHash = null
                     def build = currentBuild.previousSuccessfulBuild
+                    def buildNum = null
                     while (build != null && targetCommitHash == null) {
                         // 获取构建参数
                         def previousParams = build.rawBuild.getAction(hudson.model.ParametersAction.class)
@@ -165,20 +166,22 @@ pipeline {
                         if(previousPlats.size() == 4) { // 只查找包含所有平台的构建
                             def actions = build.rawBuild.getActions(hudson.plugins.git.util.BuildData.class)
                             for (action in actions) {
-                                echo "lastBuiltRevision ${build.number}: ${action.lastBuiltRevision.SHA1}"
                                 if (action.remoteUrls.contains(env.REMOTE_URL)) {
-                                    targetCommitHash = action.lastBuiltRevision.SHA1
+                                    def revision = action.getLastBuiltRevision()
+                                    targetCommitHash = revision.getSha1String()
+                                    buildNum = build.number
+                                    echo "lastBuiltRevision ${buildNum}: ${targetCommitHash}"
                                     break
                                 }
                             }
                         }
                         build = build.previousSuccessfulBuild
                     }
-                    // 如果没有找到, 设置为空字符串, 会 link 所有 bundle
+                    // TODO: 如果没有找到, 写死为首次完整构建并上传资源的 commit hash
                     if(targetCommitHash == null) {
                         targetCommitHash = ''
                     }
-                    echo "Last successfulBuild commit hash: ${targetCommitHash}"
+                    echo "Find last successfulBuild: ${buildNum}, commit hash: ${targetCommitHash}"
 
                     dir("${env.PROJECT_PATH}/tools/link-bundles") {
                         sh 'yarn'
