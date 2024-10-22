@@ -159,12 +159,17 @@ pipeline {
                     def targetCommitHash = null
                     def build = currentBuild.previousSuccessfulBuild
                     while (build != null && targetCommitHash == null) {
-                        def actions = build.rawBuild.getActions(hudson.plugins.git.util.BuildData.class)
-                        for (action in actions) {
-                            def remoteUrls = action.remoteUrls
-                            if (remoteUrls.contains(env.REMOTE_URL)) {
-                                targetCommitHash = action.lastBuiltRevision.SHA1
-                                break
+                        // 获取构建参数
+                        def previousParams = build.rawBuild.getAction(hudson.model.ParametersAction.class)
+                        def previousPlats = previousParams.getParameter('BUILD_PLATFORMS').tokenize(',')
+                        if(previousPlats.size() == 4) { // 只查找包含所有平台的构建
+                            def actions = build.rawBuild.getActions(hudson.plugins.git.util.BuildData.class)
+                            for (action in actions) {
+                                echo "lastBuiltRevision ${build.number}: ${action.lastBuiltRevision.SHA1}"
+                                if (action.remoteUrls.contains(env.REMOTE_URL)) {
+                                    targetCommitHash = action.lastBuiltRevision.SHA1
+                                    break
+                                }
                             }
                         }
                         build = build.previousSuccessfulBuild
